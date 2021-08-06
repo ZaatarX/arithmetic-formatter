@@ -1,45 +1,70 @@
-import re
+def arithmetic_arranger(problems, calc=None):
+    if len(problems) <= 5:
+        top = []
+        bot = []
+        operators = []
+        dashes = []
+        results = []
 
-def arithmetic_arranger(problems, calc):
-    if len(problems) > 5:
-        return 'Error: Too many problems.'
+        for problem in problems:
+            splits = problem.split()
+            if splits[1] != "+" and splits[1] != "-":
+                return "Error: Operator must be '+' or '-'."
 
-    splits = []
-    operands = []
-    operators = []
-    i = 1
+            if not (splits[0].isnumeric()) or not (splits[2].isnumeric()):
+                return "Error: Numbers must only contain digits."
 
-    for problem in problems:
-        splits.append(problem.split())
+            if len(splits[0]) > 4 or len(splits[2]) > 4:
+                return 'Error: Numbers cannot be more than four digits.'
 
-    for op in splits:
-      if i % 2 == 0:
-        if op == '+' or op == '-':
-          operators.append(op)
-        else:
-          return 'Error: Operator must be ''+'' or ''-''.'
-      else:
-        if re.match(r'^([\d]+)$', op):
-          if len(op) > 4:
-            return 'Error: Numbers cannot be more than four digits.'
-          operands.append(int(op))
-        else:
-          return 'Error: Numbers must only contain digits.'
+            if calc:
+                if splits[1] == '+':
+                    results.append(str(int(splits[0]) + int(splits[2])))
+                else:
+                    results.append(str(int(splits[0]) - int(splits[2])))
 
-      i += 1
+            operators.append(splits[1])
+            top.append(str(splits[0]))
+            bot.append(str(splits[2]))
 
-    if calc:
-      results = []
-      i = 0
-      for operator in operators:
-        if operator == '+':
-          results.append(operands[i] + operands[i+1])
-        else:
-          results.append(operands[i] - operands[i+1])
-          
-        i += 2
-      
+        i = 0
 
+        for operator in operators:
+            if len(top[i]) < len(bot[i]):
+                multiplier = (len(bot[i]) + 2) - len(top[i])
 
+                top[i] = ' ' * multiplier + top[i]
+                bot[i] = operator + ' ' + bot[i]
+            else:
+                top[i] = '  ' + top[i]
+                multiplier = len(top[i]) - len(bot[i])
+                bot[i] = operator + ' ' * (multiplier - 1) + bot[i]
 
-    return arranged_problems
+            if calc:
+                if len(top[i]) > len(results[i]):
+                    multiplier = len(top[i]) - len(results[i])
+                    results[i] = ' ' * multiplier + results[i]
+
+                    dashes.append('-' * len(top[i]))
+                else:
+                    multiplier = len(results[i]) - len(top[i])
+                    top[i] = ' ' * multiplier + top[i]
+                    multiplier = len(results[i]) - len(bot[i])
+                    bot[i] = operator + ' ' * multiplier + bot[i]
+
+                    dashes.append('-' * (len(results[i]) + 1))
+            else:
+                dashes.append('-' * len(top[i]))
+
+            i += 1
+
+        arranged_problems = '    '.join(top) + '\n'
+        arranged_problems += '    '.join(bot) + '\n'
+        arranged_problems += '    '.join(dashes)
+
+        if calc:
+            arranged_problems += '\n' + '    '.join(results)
+
+        return arranged_problems
+
+    return 'Error: Too many problems.'
